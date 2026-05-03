@@ -155,6 +155,7 @@ class CloudServerSettingsFragment : BasePreferenceFragment() {
             try {
                 requireActivity().findViewById<View>(R.id.progressBar).isVisible = true
                 service.changePassword(currentPassword, newPassword)
+                findPreference<Preference>("gateway.clear_password")?.isVisible = settings.hasPassword
                 listView.adapter?.notifyDataSetChanged()
                 showToast(R.string.password_changed_successfully)
             } catch (e: Exception) {
