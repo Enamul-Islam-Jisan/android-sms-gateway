@@ -30,6 +30,8 @@ class PasswordPromptDialogFragment : DialogFragment() {
                         REQUEST_KEY,
                         Bundle().apply {
                             putString(KEY_PASSWORD, password)
+                            putString(KEY_ACTION, arguments?.getString(ARG_ACTION))
+                            putString(KEY_PAYLOAD, arguments?.getString(ARG_PAYLOAD))
                         }
                     )
                 }
@@ -62,14 +64,28 @@ class PasswordPromptDialogFragment : DialogFragment() {
 
     companion object {
         const val REQUEST_KEY = "PasswordPromptDialogFragment"
+        const val ACTION_CHANGE_PASSWORD = "change_password"
+        const val ACTION_LOGIN_CODE = "login_code"
+
         private const val ARG_MESSAGE = "message"
+        private const val ARG_ACTION = "action"
+        private const val ARG_PAYLOAD = "payload"
+
         private const val KEY_PASSWORD = "password"
         private const val KEY_CANCELED = "canceled"
+        private const val KEY_ACTION = "action"
+        private const val KEY_PAYLOAD = "payload"
 
-        fun newInstance(message: String? = null): PasswordPromptDialogFragment {
+        fun newInstance(
+            message: String? = null,
+            action: String? = null,
+            payload: String? = null
+        ): PasswordPromptDialogFragment {
             return PasswordPromptDialogFragment().apply {
                 arguments = Bundle().apply {
                     message?.let { putString(ARG_MESSAGE, it) }
+                    action?.let { putString(ARG_ACTION, it) }
+                    payload?.let { putString(ARG_PAYLOAD, it) }
                 }
             }
         }
@@ -80,6 +96,14 @@ class PasswordPromptDialogFragment : DialogFragment() {
             } else {
                 data.getString(KEY_PASSWORD)
             }
+        }
+
+        fun getAction(data: Bundle): String? {
+            return data.getString(KEY_ACTION)
+        }
+
+        fun getPayload(data: Bundle): String? {
+            return data.getString(KEY_PAYLOAD)
         }
     }
 }

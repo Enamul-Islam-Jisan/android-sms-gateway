@@ -24,9 +24,6 @@ class CloudServerSettingsFragment : BasePreferenceFragment() {
     private val settings: GatewaySettings by inject()
     private val service: GatewayService by inject()
 
-    private var pendingPasswordChange: String? = null
-    private var pendingLoginCodeRequest = false
-
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.cloud_server_preferences, rootKey)
@@ -86,8 +83,11 @@ class CloudServerSettingsFragment : BasePreferenceFragment() {
                 if (settings.hasPassword) {
                     changePasswordInternal(settings.password!!, value)
                 } else {
-                    pendingPasswordChange = value
-                    showPasswordPromptDialog(getString(R.string.enter_current_password))
+                    showPasswordPromptDialog(
+                        getString(R.string.enter_current_password),
+                        PasswordPromptDialogFragment.ACTION_CHANGE_PASSWORD,
+                        value
+                    )
                 }
 
                 true
@@ -113,33 +113,40 @@ class CloudServerSettingsFragment : BasePreferenceFragment() {
                 if (settings.hasPassword) {
                     requestLoginCode()
                 } else {
-                    pendingLoginCodeRequest = true
-                    showPasswordPromptDialog(getString(R.string.enter_current_password))
+                    showPasswordPromptDialog(
+                        getString(R.string.enter_current_password),
+                        PasswordPromptDialogFragment.ACTION_LOGIN_CODE
+                    )
                 }
                 true
             }
         }
 
         setFragmentResultListener(PasswordPromptDialogFragment.REQUEST_KEY) { _, data ->
-            val password = PasswordPromptDialogFragment.getPassword(data)
-            if (password == null) {
-                pendingPasswordChange = null
-                pendingLoginCodeRequest = false
-                return@setFragmentResultListener
-            }
+            val password =
+                PasswordPromptDialogFragment.getPassword(data) ?: return@setFragmentResultListener
 
-            if (pendingPasswordChange != null) {
-                changePasswordInternal(password, pendingPasswordChange!!)
-                pendingPasswordChange = null
-            } else if (pendingLoginCodeRequest) {
-                requestLoginCode(password)
-                pendingLoginCodeRequest = false
+            when (PasswordPromptDialogFragment.getAction(data)) {
+                PasswordPromptDialogFragment.ACTION_CHANGE_PASSWORD -> {
+                    val newPassword = PasswordPromptDialogFragment.getPayload(data)
+                    if (newPassword != null) {
+                        changePasswordInternal(password, newPassword)
+                    }
+                }
+
+                PasswordPromptDialogFragment.ACTION_LOGIN_CODE -> {
+                    requestLoginCode(password)
+                }
             }
         }
     }
 
-    private fun showPasswordPromptDialog(message: String) {
-        PasswordPromptDialogFragment.newInstance(message)
+    private fun showPasswordPromptDialog(
+        message: String,
+        action: String? = null,
+        newPassword: String? = null
+    ) {
+        PasswordPromptDialogFragment.newInstance(message, action, newPassword)
             .show(parentFragmentManager, "password_prompt")
     }
 
