@@ -1,47 +1,49 @@
 package me.capcom.smsgateway.providers
 
 import android.content.Context
-import android.net.wifi.WifiManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import java.net.Inet4Address
 import java.net.NetworkInterface
 
-
-class LocalIPProvider(private val context: Context): IPProvider {
+class LocalIPProvider(private val context: Context) : IPProvider {
     override suspend fun getIP(): String? {
         try {
-            val wifiManager =
-                context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-            // If the device is in tethering mode, the following method may return null or a default IP
-            wifiManager.connectionInfo?.let { connectionInfo ->
-                val ipInt = connectionInfo.ipAddress
-                if (ipInt != 0) {
-                    return (ipInt and 0xFF).toString() + "." +
-                            ((ipInt shr 8) and 0xFF) + "." +
-                            ((ipInt shr 16) and 0xFF) + "." +
-                            ((ipInt shr 24) and 0xFF)
+            // Prefer Wi-Fi or Ethernet
+            val networks = connectivityManager.allNetworks
+            for (network in networks) {
+                val capabilities = connectivityManager.getNetworkCapabilities(network)
+                if (capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true ||
+                    capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true) {
+                    val linkProperties = connectivityManager.getLinkProperties(network)
+                    linkProperties?.linkAddresses?.forEach { linkAddress ->
+                        val address = linkAddress.address
+                        if (address is Inet4Address && !address.isLoopbackAddress) {
+                            return address.hostAddress
+                        }
+                    }
                 }
             }
 
-            // If the above doesn't work, try to find the WiFi network interface directly
-            val wifiInterface = NetworkInterface.getNetworkInterfaces().asSequence()
-                .find { it.name.contains("wlan", ignoreCase = true) }
+            // Fallback to active network if no Wi-Fi/Ethernet found
+            val activeNetwork = connectivityManager.activeNetwork
+            val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
 
-            wifiInterface?.inetAddresses?.asSequence()
-                ?.find { !it.isLoopbackAddress && it is Inet4Address }
-                ?.let { inetAddress ->
-                    return inetAddress.hostAddress
+            linkProperties?.linkAddresses?.forEach { linkAddress ->
+                val address = linkAddress.address
+                if (address is Inet4Address && !address.isLoopbackAddress) {
+                    return address.hostAddress
                 }
+            }
 
-            // Check any other network interface
-            val interfaces = NetworkInterface.getNetworkInterfaces()
-            while (interfaces.hasMoreElements()) {
-                val intf = interfaces.nextElement()
-                val addrs = intf.inetAddresses
-                while (addrs.hasMoreElements()) {
-                    val addr = addrs.nextElement()
-                    if (!addr.isLoopbackAddress && addr is Inet4Address) {
-                        return addr.hostAddress
+            // Last resort: search all interfaces
+            NetworkInterface.getNetworkInterfaces().asSequence().forEach { networkInterface ->
+                networkInterface.inetAddresses.asSequence().forEach { address ->
+                    if (address is Inet4Address && !address.isLoopbackAddress) {
+                        return address.hostAddress
                     }
                 }
             }

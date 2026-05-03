@@ -169,4 +169,11 @@
     <string name="outgoing_messages">ИСХОДЯЩИЕ</string>
     <string name="language">Язык</string>
     <string name="language_system">Системный (по умолчанию)</string>
+    <string name="retry_count_format">Повторов: %1$d</string>
+    <string name="created_at_format">Создано: %1$s</string>
+    <string name="next_attempt_format">След. попытка: %1$s</string>
+    <string name="delete">Удалить</string>
+    <string name="retry">Повторить</string>
+    <string name="webhook_queue_title">Очередь вебхуков</string>
+    <string name="webhook_queue_summary">Просмотр и управление очередью обработки вебхуков</string>
 </resources>

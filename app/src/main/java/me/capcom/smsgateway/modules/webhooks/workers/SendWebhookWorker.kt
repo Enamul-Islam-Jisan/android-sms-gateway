@@ -214,6 +214,8 @@ class SendWebhookWorker(appContext: Context, params: WorkerParameters) :
             url: String,
             data: WebHookEventDTO,
             internetRequired: Boolean,
+            sender: String? = null,
+            message: String? = null,
         ) {
             val logsService = get<LogsService>()
 
@@ -226,6 +228,8 @@ class SendWebhookWorker(appContext: Context, params: WorkerParameters) :
                     queueRepository.enqueueWebhook(
                         url = url,
                         payload = gson.toJson(data),
+                        sender = sender,
+                        message = message
                     )
                 }
 

@@ -1,95 +1,149 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/background"
     tools:context=".ui.MessagesListFragment">
 
-    <!-- Fixed top panel with queue statistics -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/statisticsCard"
+    <!-- Dense Stats Strip -->
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        android:orientation="horizontal"
+        android:background="@color/slate_50"
+        android:paddingVertical="4dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
             android:orientation="vertical"
-            android:padding="12dp">
-
+            android:padding="8dp">
             <TextView
-                android:id="@+id/queueTitle"
+                android:id="@+id/totalCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="@string/queue_status"
-                android:textSize="16sp"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/slate_900"
                 android:textStyle="bold" />
-
-            <!-- GridLayout for stats -->
-            <GridLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:alignmentMode="alignMargins"
-                android:columnCount="3"
-                android:rowOrderPreserved="false"
-                android:useDefaultMargins="true">
-
-                <TextView
-                    android:id="@+id/totalMessages"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnSpan="2"
-                    android:layout_columnWeight="1"
-                    android:ellipsize="middle"
-                    android:singleLine="true"
-                    tools:text="Total: 0" />
-
-                <TextView
-                    android:id="@+id/pendingMessages"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:ellipsize="middle"
-                    android:singleLine="true"
-                    tools:text="Pending: 0" />
-
-                <TextView
-                    android:id="@+id/sentMessages"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:ellipsize="middle"
-                    android:singleLine="true"
-                    tools:text="Sent: 0" />
-
-                <TextView
-                    android:id="@+id/deliveredMessages"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:ellipsize="middle"
-                    android:singleLine="true"
-                    tools:text="Delivered: 0" />
-
-                <TextView
-                    android:id="@+id/failedMessages"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:ellipsize="middle"
-                    android:singleLine="true"
-                    tools:text="Failed: 0" />
-
-            </GridLayout>
-
+                android:text="TOTAL"
+                android:textSize="10sp"
+                android:textColor="@color/slate_500" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/slate_200" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <TextView
+                android:id="@+id/pendingCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QUEUE"
+                android:textSize="10sp"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/slate_200" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <TextView
+                android:id="@+id/processingCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/secondary"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACTIVE"
+                android:textSize="10sp"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/slate_200" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <TextView
+                android:id="@+id/sentCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/secondary"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SENT"
+                android:textSize="10sp"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/slate_200" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <TextView
+                android:id="@+id/failedCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="#EF4444"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FAILED"
+                android:textSize="10sp"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/slate_200" />
 
     <!-- RecyclerView for messages -->
     <androidx.recyclerview.widget.RecyclerView
@@ -97,7 +151,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="@color/background"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_message" />
 
-</LinearLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>

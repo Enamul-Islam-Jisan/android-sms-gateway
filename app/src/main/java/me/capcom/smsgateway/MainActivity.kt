@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.google.android.material.tabs.TabLayoutMediator
 import me.capcom.smsgateway.databinding.ActivityMainBinding
 import me.capcom.smsgateway.ui.HolderFragment
 import me.capcom.smsgateway.ui.HomeFragment
 import me.capcom.smsgateway.ui.SettingsFragment
+import me.capcom.smsgateway.ui.SettingsHolderFragment
 import me.capcom.smsgateway.helpers.LocaleHelper
 
 class MainActivity : AppCompatActivity() {
@@ -26,27 +26,32 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setSupportActionBar(binding.toolbar)
+
         val adapter = FragmentsAdapter(this)
         binding.viewPager.adapter = adapter
+        binding.viewPager.isUserInputEnabled = false // Disable swiping for bottom nav consistency
 
-        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            when (position) {
-                0 -> tab.apply {
-                    text = getString(R.string.tab_text_home)
-                    setIcon(R.drawable.ic_home)
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_home -> {
+                    binding.viewPager.currentItem = TAB_INDEX_HOME
+                    supportActionBar?.title = getString(R.string.tab_text_home)
+                    true
                 }
-
-                1 -> tab.apply {
-                    text = getString(R.string.tab_text_messages)
-                    setIcon(R.drawable.ic_sms)
+                R.id.navigation_messages -> {
+                    binding.viewPager.currentItem = TAB_INDEX_MESSAGES
+                    supportActionBar?.title = getString(R.string.tab_text_messages)
+                    true
                 }
-
-                2 -> tab.apply {
-                    text = getString(R.string.tab_text_settings)
-                    setIcon(R.drawable.ic_advanced)
+                R.id.navigation_settings -> {
+                    binding.viewPager.currentItem = TAB_INDEX_SETTINGS
+                    supportActionBar?.title = getString(R.string.tab_text_settings)
+                    true
                 }
+                else -> false
             }
-        }.attach()
+        }
 
         processIntent(intent)
     }
@@ -60,6 +65,24 @@ class MainActivity : AppCompatActivity() {
         val tabIndex = intent.getIntExtra(EXTRA_TAB_INDEX, TAB_INDEX_HOME)
 
         binding.viewPager.currentItem = tabIndex
+        binding.bottomNavigation.selectedItemId = when (tabIndex) {
+            TAB_INDEX_HOME -> {
+                supportActionBar?.title = getString(R.string.tab_text_home)
+                R.id.navigation_home
+            }
+            TAB_INDEX_MESSAGES -> {
+                supportActionBar?.title = getString(R.string.tab_text_messages)
+                R.id.navigation_messages
+            }
+            TAB_INDEX_SETTINGS -> {
+                supportActionBar?.title = getString(R.string.tab_text_settings)
+                R.id.navigation_settings
+            }
+            else -> {
+                supportActionBar?.title = getString(R.string.tab_text_home)
+                R.id.navigation_home
+            }
+        }
     }
 
     class FragmentsAdapter(activity: AppCompatActivity) :
@@ -71,7 +94,7 @@ class MainActivity : AppCompatActivity() {
             return when (position) {
                 0 -> HomeFragment.newInstance()
                 1 -> HolderFragment.newInstance()
-                else -> SettingsFragment.newInstance()
+                else -> SettingsHolderFragment.newInstance()
             }
         }
 

@@ -8,4 +8,6 @@ data class WebHookDTO(
     val url: String,
     val event: WebHookEvent,
     val source: EntitySource,
+    val filterSenders: String? = null,
+    val ignoreOtp: Boolean = false,
 )

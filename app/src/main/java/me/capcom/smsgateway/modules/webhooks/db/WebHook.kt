@@ -1,5 +1,6 @@
 package me.capcom.smsgateway.modules.webhooks.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import me.capcom.smsgateway.domain.EntitySource
@@ -12,4 +13,7 @@ data class WebHook(
     val url: String,
     val event: WebHookEvent,
     val source: EntitySource,
+    val filterSenders: String? = null,
+    @ColumnInfo(defaultValue = "0")
+    val ignoreOtp: Boolean = false,
 )

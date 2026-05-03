@@ -5,6 +5,8 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import me.capcom.smsgateway.data.entities.Message
 import me.capcom.smsgateway.data.entities.MessagesTotals
 import me.capcom.smsgateway.modules.messages.MessagesRepository
@@ -37,6 +39,26 @@ class MessagesListViewModel(
 
         isLoading = true
         _limit.value = currentLimit + chunkSize
+    }
+
+    fun cancelAllPending() {
+        viewModelScope.launch {
+            messagesRepo.cancelAllPending()
+        }
+    }
+
+    fun clearHistory() {
+        viewModelScope.launch {
+            messagesRepo.clearHistory()
+            _limit.value = chunkSize // Reset limit to refresh
+        }
+    }
+
+    fun deleteAll() {
+        viewModelScope.launch {
+            messagesRepo.deleteAll()
+            _limit.value = chunkSize // Reset limit to refresh
+        }
     }
 
     companion object {

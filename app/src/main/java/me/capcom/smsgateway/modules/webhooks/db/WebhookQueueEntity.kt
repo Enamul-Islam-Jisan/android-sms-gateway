@@ -41,4 +41,10 @@ data class WebhookQueueEntity(
 
     @ColumnInfo(name = "last_error")
     val lastError: String? = null,
+
+    @ColumnInfo(name = "sender")
+    val sender: String? = null,
+
+    @ColumnInfo(name = "message")
+    val message: String? = null,
 )

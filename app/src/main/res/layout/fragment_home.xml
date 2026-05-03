@@ -1,25 +1,147 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    tools:context=".ui.HomeFragment">
+    android:background="@color/background"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textConnectionStatus"
+    <!-- Compact Status Header -->
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:background="@drawable/rounded_background"
-        android:backgroundTint="@color/connection_status_background"
-        android:enabled="true"
-        android:gravity="center"
-        android:padding="8dp"
-        android:textColor="@android:color/white"
-        android:visibility="gone"
-        tools:text="@string/internet_connection_available" />
+        android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <View
+            android:id="@+id/statusDot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/slate_500" />
+
+        <TextView
+            android:id="@+id/textStatusLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Status: Offline"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textColor="@color/slate_900"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/buttonStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="0.8"
+            android:scaleY="0.8" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/slate_200" />
+
+    <!-- Metrics Row (High Density) -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="0dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/totalProcessed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:textColor="@color/slate_900"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TOTAL"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/slate_200" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/pendingQueue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QUEUE"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/slate_200" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/deliveredCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:textColor="@color/secondary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SENT"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/slate_500" />
+        </LinearLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/slate_200" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -29,232 +151,204 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:orientation="vertical">
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- Service Toggles -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                app:cardCornerRadius="16dp"
-                app:contentPadding="8dp">
+                android:padding="12dp"
+                android:text="INFRASTRUCTURE"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/slate_500"
+                android:textStyle="bold" />
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <ImageView
-                        android:id="@+id/imageLocalServer"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_margin="4dp"
-                        android:src="@drawable/ic_local_server"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/headerLocalServer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:lines="1"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/settings_local_server"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                        app:layout_constraintBottom_toBottomOf="@id/imageLocalServer"
-                        app:layout_constraintStart_toEndOf="@id/imageLocalServer"
-                        app:layout_constraintEnd_toStartOf="@+id/switchUseLocalServer"
-                        app:layout_constraintTop_toTopOf="@id/imageLocalServer" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchUseLocalServer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
-                        app:layout_constraintBottom_toBottomOf="@id/imageLocalServer"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="@id/imageLocalServer" />
-
-                    <GridLayout
-                        android:id="@+id/layoutLocalServer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:columnCount="2"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                        app:layout_constraintEnd_toEndOf="@+id/switchUseLocalServer"
-                        app:layout_constraintStart_toEndOf="@id/imageLocalServer"
-                        app:layout_constraintTop_toBottomOf="@id/headerLocalServer">
-
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/local_address" />
-
-                        <TextView
-                            android:id="@+id/textLocalIP"
-                            style="@style/HomeCardValue"
-                            android:text="@string/dots"
-                            tools:text="127.0.0.1:8080" />
-
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/public_address" />
-
-                        <TextView
-                            android:id="@+id/textPublicIP"
-                            style="@style/HomeCardValue"
-                            android:text="@string/dots"
-                            tools:text="127.0.0.1:8080" />
-
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/label_username" />
-
-                        <TextView
-                            android:id="@+id/textLocalUsername"
-                            style="@style/HomeCardValue"
-                            tools:text="sms" />
-
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/label_password" />
-
-                        <TextView
-                            android:id="@+id/textLocalPassword"
-                            style="@style/HomeCardValue"
-                            tools:text="1q2w3e4r" />
-
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/device_id" />
-
-                        <TextView
-                            android:id="@+id/textLocalDeviceId"
-                            style="@style/HomeCardValue"
-                            tools:text="device-123" />
-                    </GridLayout>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
+            <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                app:cardCornerRadius="16dp"
-                app:contentPadding="8dp">
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_local_server"
+                    app:tint="@color/slate_500" />
 
-                    <ImageView
-                        android:id="@+id/imageRemoteServer"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_margin="4dp"
-                        android:src="@drawable/ic_cloud_server"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="Local Node"
+                    android:textColor="@color/slate_900" />
 
-                    <TextView
-                        android:id="@+id/headerRemoteServer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:lines="1"
-                        android:layout_margin="8dp"
-                        android:text="@string/cloud_server"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                        app:layout_constraintBottom_toBottomOf="@id/imageRemoteServer"
-                        app:layout_constraintStart_toEndOf="@id/imageRemoteServer"
-                        app:layout_constraintEnd_toStartOf="@+id/switchUseRemoteServer"
-                        app:layout_constraintTop_toTopOf="@id/imageRemoteServer" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchUseLocalServer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchUseRemoteServer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
-                        app:layout_constraintBottom_toBottomOf="@id/imageRemoteServer"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="@id/imageRemoteServer" />
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp">
 
-                    <GridLayout
-                        android:id="@+id/layoutRemoteServer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:columnCount="2"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/imageRemoteServer"
-                        app:layout_constraintTop_toBottomOf="@id/headerRemoteServer">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_cloud_server"
+                    app:tint="@color/slate_500" />
 
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="Cloud Link"
+                    android:textColor="@color/slate_900" />
 
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/server_address" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchUseRemoteServer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
-                        <TextView
-                            android:id="@+id/textRemoteAddress"
-                            style="@style/HomeCardValue"
-                            android:autoLink="web"
-                            android:text="@string/dots"
-                            tools:text="@string/settings_address_is_sms_capcom_me" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/slate_200" />
 
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/label_username" />
+            <!-- Expandable System Details -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/layoutDetailsHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:padding="12dp">
 
-                        <TextView
-                            android:id="@+id/textRemoteUsername"
-                            style="@style/HomeCardValue"
-                            tools:text="1Q2W3E" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="SYSTEM DETAILS"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/slate_500"
+                    android:textStyle="bold" />
 
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/label_password" />
+                <ImageView
+                    android:id="@+id/imageDetailsArrow"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_advanced"
+                    app:tint="@color/slate_500" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
-                        <TextView
-                            android:id="@+id/textRemotePassword"
-                            style="@style/HomeCardValue"
-                            tools:text="1q2w3e4r" />
+            <GridLayout
+                android:id="@+id/layoutDetailsContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/slate_50"
+                android:columnCount="2"
+                android:padding="16dp"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-                        <TextView
-                            style="@style/HomeCardLabel"
-                            android:text="@string/device_id" />
+                <TextView
+                    style="@style/HomeCardLabel"
+                    android:text="Local IP" />
 
-                        <TextView
-                            android:id="@+id/textRemoteDeviceId"
-                            style="@style/HomeCardValue"
-                            tools:text="device-456" />
-                    </GridLayout>
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/textLocalIP"
+                    style="@style/HomeCardValue"
+                    tools:text="192.168.1.10:8080" />
 
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    style="@style/HomeCardLabel"
+                    android:text="Public IP" />
+
+                <TextView
+                    android:id="@+id/textPublicIP"
+                    style="@style/HomeCardValue"
+                    tools:text="1.2.3.4:8080" />
+
+                <TextView
+                    style="@style/HomeCardLabel"
+                    android:text="Local User" />
+
+                <TextView
+                    android:id="@+id/textLocalUsername"
+                    style="@style/HomeCardValue"
+                    tools:text="admin" />
+
+                <TextView
+                    style="@style/HomeCardLabel"
+                    android:text="Cloud ID" />
+
+                <TextView
+                    android:id="@+id/textRemoteDeviceId"
+                    style="@style/HomeCardValue"
+                    tools:text="abc-123" />
+
+                <TextView
+                    style="@style/HomeCardLabel"
+                    android:text="Cloud User" />
+
+                <TextView
+                    android:id="@+id/textRemoteUsername"
+                    style="@style/HomeCardValue"
+                    tools:text="user_99" />
+                
+                <TextView
+                    style="@style/HomeCardLabel"
+                    android:text="Cloud Host" />
+
+                <TextView
+                    android:id="@+id/textRemoteAddress"
+                    style="@style/HomeCardValue"
+                    tools:text="api.sms-gate.app" />
+
+            </GridLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/slate_200" />
+            
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchAutostart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="Start on boot"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:textColor="@color/slate_900" />
 
         </LinearLayout>
-
     </ScrollView>
 
-    <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/switchAutostart"
+    <!-- Tiny Ticker -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/slate_200" />
+
+    <TextView
+        android:id="@+id/textConnectionStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/settings_start_on_boot" />
+        android:padding="8dp"
+        android:text="System idle"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        android:textColor="@color/slate_500"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="8dp" />
-
-    <ToggleButton
-        android:id="@+id/buttonStart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textOff="@string/settings_offline"
-        android:textOn="@string/settings_online" />
 </androidx.appcompat.widget.LinearLayoutCompat>

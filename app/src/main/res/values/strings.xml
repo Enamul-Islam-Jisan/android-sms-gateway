@@ -171,4 +171,27 @@
     <string name="incoming_type_mms" translatable="false">MMS</string>
     <string name="language">Language</string>
     <string name="language_system">System default</string>
+    <string name="retry_count_format">Retries: %1$d</string>
+    <string name="created_at_format">Created: %1$s</string>
+    <string name="next_attempt_format">Next attempt: %1$s</string>
+    <string name="delete">Delete</string>
+    <string name="retry">Retry</string>
+    <string name="webhook_queue_title">Webhook Queue</string>
+    <string name="webhook_queue_summary">View and manage the status of pending and failed webhooks</string>
+    <string name="webhook_history_limit_title">Webhook History Limit</string>
+    <string name="webhook_history_limit_summary">Maximum number of items to show in the history tab</string>
+    <string name="pending">Pending</string>
+    <string name="failed">Failed</string>
+    <string name="history">History</string>
+    <string name="incoming_history_limit_title">Incoming History Limit</string>
+    <string name="incoming_history_limit_summary">Maximum number of items to show in the incoming messages list</string>
+    <string name="all">All</string>
+    <string name="action_cancel_all_pending">Cancel All Pending</string>
+    <string name="action_clear_history">Clear History</string>
+    <string name="action_delete_all">Delete All</string>
+    <string name="cancel_confirmation">Are you sure you want to cancel all pending messages?</string>
+    <string name="clear_history_confirmation">Are you sure you want to clear message history (excluding pending)?</string>
+    <string name="delete_all_confirmation">Are you sure you want to delete ALL messages?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

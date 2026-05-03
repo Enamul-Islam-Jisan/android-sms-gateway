@@ -14,8 +14,14 @@
     <Preference
         android:icon="@drawable/ic_messages"
         app:fragment="me.capcom.smsgateway.ui.settings.MessagesSettingsFragment"
-        app:title="@string/messages"
+        app:title="@string/outgoing_messages"
         app:summary="@string/delays_limits_etc" />
+
+    <Preference
+        android:icon="@drawable/ic_sms"
+        app:fragment="me.capcom.smsgateway.ui.settings.IncomingMessagesSettingsFragment"
+        app:title="@string/incoming_messages"
+        app:summary="@string/incoming_history_limit_summary" />
 
     <Preference
         android:icon="@drawable/ic_webhook"

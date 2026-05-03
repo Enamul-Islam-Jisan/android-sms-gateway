@@ -31,6 +31,7 @@ interface MessagesDao {
         SELECT
             COUNT(*) as total,
             COALESCE(SUM(CASE WHEN state = 'Pending' THEN 1 ELSE 0 END), 0) as pending,
+            COALESCE(SUM(CASE WHEN state = 'Processing' THEN 1 ELSE 0 END), 0) as processing,
             COALESCE(SUM(CASE WHEN state = 'Sent' THEN 1 ELSE 0 END), 0) as sent,
             COALESCE(SUM(CASE WHEN state = 'Delivered' THEN 1 ELSE 0 END), 0) as delivered,
             COALESCE(SUM(CASE WHEN state = 'Failed' THEN 1 ELSE 0 END), 0) as failed
@@ -203,6 +204,30 @@ interface MessagesDao {
 
     @Query("UPDATE message SET partsCount = :partsCount WHERE id = :id")
     fun updatePartsCount(id: String, partsCount: Int)
+
+    @Query("UPDATE message SET state = 'Failed' WHERE state = 'Pending'")
+    fun _cancelAllPending()
+
+    @Transaction
+    fun cancelAllPending() {
+        _cancelAllPending()
+        // We should also update recipient states for consistency if needed, 
+        // but the message state itself is the main thing for the queue.
+        // For better consistency, let's update recipients too.
+        _cancelAllPendingRecipients()
+    }
+
+    @Query("UPDATE messagerecipient SET state = 'Failed', error = 'Cancelled by user' WHERE state = 'Pending'")
+    fun _cancelAllPendingRecipients()
+
+    @Query("DELETE FROM message WHERE state <> 'Pending'")
+    fun clearHistory()
+
+    @Query("DELETE FROM message")
+    fun deleteAll()
+
+    @Query("DELETE FROM messagerecipient WHERE messageId NOT IN (SELECT id FROM message)")
+    fun deleteOrphanedRecipients()
 
     @Query("DELETE FROM message WHERE createdAt < :until AND state <> 'Pending'")
     suspend fun truncateLog(until: Long)

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/tab_text_home" />
+    <item
+        android:id="@+id/navigation_messages"
+        android:icon="@drawable/ic_sms"
+        android:title="@string/tab_text_messages" />
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/ic_advanced"
+        android:title="@string/tab_text_settings" />
+</menu>

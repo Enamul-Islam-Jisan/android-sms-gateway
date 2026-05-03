@@ -58,6 +58,20 @@ class MessagesRepository(private val dao: MessagesDao) {
         return message
     }
 
+    suspend fun cancelAllPending() {
+        dao.cancelAllPending()
+    }
+
+    suspend fun clearHistory() {
+        dao.clearHistory()
+        dao.deleteOrphanedRecipients()
+    }
+
+    suspend fun deleteAll() {
+        dao.deleteAll()
+        dao.deleteOrphanedRecipients()
+    }
+
     fun getPending(order: MessagesSettings.ProcessingOrder): StoredSendRequest? {
         while (true) {
             val now = Date()

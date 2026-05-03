@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="@string/incoming_messages">
+        <ListPreference
+            android:defaultValue="50"
+            android:entries="@array/webhook_history_limit_entries"
+            android:entryValues="@array/webhook_history_limit_values"
+            android:icon="@drawable/ic_log_lifetime"
+            android:key="incoming.incoming_max_history_size"
+            app:summary="@string/incoming_history_limit_summary"
+            app:title="@string/incoming_history_limit_title" />
+    </PreferenceCategory>
+</PreferenceScreen>

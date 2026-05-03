@@ -19,7 +19,10 @@ enum class WebhookStatus(val value: String, val displayName: String) {
     FAILED("failed", "Failed"),
 
     @SerializedName("permanently_failed")
-    PERMANENTLY_FAILED("permanently_failed", "Permanently Failed");
+    PERMANENTLY_FAILED("permanently_failed", "Permanently Failed"),
+
+    @SerializedName("cancelled")
+    CANCELLED("cancelled", "Cancelled");
 
     companion object {
         fun fromValue(value: String): WebhookStatus? {

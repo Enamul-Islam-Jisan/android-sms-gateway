@@ -280,6 +280,9 @@ class MessagesService(
             return false
         }
 
+        // Mark as Processing to avoid duplicates in concurrent worker runs
+        updateState(request.message.id, null, ProcessingState.Processing)
+
         try {
             sendSMS(request)
             return true

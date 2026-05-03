@@ -25,21 +25,24 @@ class MessagesReceiver : BroadcastReceiver(), KoinComponent {
         val messages = Intents.getMessagesFromIntent(intent) ?: return
         val isDataMessage = intent.action == Intents.DATA_SMS_RECEIVED_ACTION
         val firstMessage = messages.first()
-//        val text = messages.joinToString(separator = "") { it.displayMessageBody }
+        val sender = firstMessage.displayOriginatingAddress ?: "Unknown"
+        val subscriptionId = SubscriptionsHelper.extractSubscriptionId(context, intent)
+
+        Log.d(TAG, "onReceive: $sender, subId: $subscriptionId")
 
         val inboxMessage = when (isDataMessage) {
             false -> InboxMessage.Text(
-                messages.joinToString(separator = "") { it.displayMessageBody },
-                firstMessage.displayOriginatingAddress,
+                messages.joinToString(separator = "") { it.displayMessageBody.trim() },
+                sender,
                 Date(firstMessage.timestampMillis),
-                SubscriptionsHelper.extractSubscriptionId(context, intent)
+                subscriptionId
             )
 
             true -> InboxMessage.Data(
                 firstMessage.userData,
-                firstMessage.displayOriginatingAddress,
+                sender,
                 Date(firstMessage.timestampMillis),
-                SubscriptionsHelper.extractSubscriptionId(context, intent)
+                subscriptionId
             )
         }
 

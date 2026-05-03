@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface IncomingMessagesDao {
@@ -13,6 +14,20 @@ interface IncomingMessagesDao {
 
     @Query("SELECT * FROM incoming_messages ORDER BY createdAt DESC, id DESC LIMIT :limit")
     fun selectLast(limit: Int): LiveData<List<IncomingMessage>>
+
+    @Query(
+        """
+        SELECT *
+        FROM incoming_messages
+        WHERE (:type IS NULL OR type = :type OR (:type = 'MMS' AND type = 'MMS_DOWNLOADED'))
+        ORDER BY createdAt DESC, id DESC
+        LIMIT :limit
+        """
+    )
+    fun select(
+        type: IncomingMessageType?,
+        limit: Int
+    ): Flow<List<IncomingMessage>>
 
     @Query(
         """
@@ -44,6 +59,9 @@ interface IncomingMessagesDao {
 
     @Query("SELECT * FROM incoming_messages WHERE id = :id LIMIT 1")
     fun selectById(id: String): IncomingMessage?
+
+    @Query("DELETE FROM incoming_messages")
+    suspend fun deleteAll()
 
     @Query(
         """

@@ -9,8 +9,9 @@ import me.capcom.smsgateway.R
 import me.capcom.smsgateway.databinding.ItemIncomingMessageBinding
 import me.capcom.smsgateway.modules.incoming.db.IncomingMessage
 import me.capcom.smsgateway.modules.incoming.db.IncomingMessageType
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class IncomingMessagesAdapter :
     ListAdapter<IncomingMessage, IncomingMessagesAdapter.IncomingMessageViewHolder>(DiffCallback()) {
@@ -40,8 +41,10 @@ class IncomingMessagesAdapter :
                 IncomingMessageType.MMS,
                 IncomingMessageType.MMS_DOWNLOADED -> binding.root.context.getString(R.string.incoming_type_mms)
             }
-            binding.textViewDate.text =
-                DateFormat.getDateTimeInstance().format(Date(item.createdAt))
+            binding.textViewSimInfo.text = item.simNumber?.let { "SIM $it" } ?: ""
+            
+            val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            binding.textViewDate.text = dateFormat.format(Date(item.createdAt))
             binding.textViewPreview.text = item.contentPreview
         }
     }

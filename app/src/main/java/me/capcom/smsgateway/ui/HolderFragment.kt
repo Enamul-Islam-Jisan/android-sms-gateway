@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.core.content.ContextCompat
 import me.capcom.smsgateway.R
 import me.capcom.smsgateway.databinding.FragmentHolderBinding
 
@@ -65,8 +66,8 @@ class HolderFragment : Fragment() {
     }
 
     private fun updateButtonStates() {
-        binding.buttonOutgoing.isEnabled = !isOutgoingSelected
-        binding.buttonIncoming.isEnabled = isOutgoingSelected
+        binding.buttonOutgoing.setTextColor(ContextCompat.getColor(requireContext(), if (isOutgoingSelected) R.color.primary else R.color.slate_500))
+        binding.buttonIncoming.setTextColor(ContextCompat.getColor(requireContext(), if (isOutgoingSelected) R.color.slate_500 else R.color.primary))
     }
 
     private fun selectOutgoing() {

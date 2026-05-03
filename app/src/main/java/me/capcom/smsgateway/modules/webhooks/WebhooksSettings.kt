@@ -15,6 +15,9 @@ class WebhooksSettings(
     val retryCount: Int
         get() = storage.get<Int>(RETRY_COUNT) ?: 15
 
+    val maxHistorySize: Int
+        get() = storage.get<Int>(MAX_HISTORY_SIZE) ?: 50
+
     val signingKey: String
         get() = storage.get<String>(SIGNING_KEY)
             ?: NanoIdUtils.randomNanoId(
@@ -26,6 +29,7 @@ class WebhooksSettings(
     companion object {
         const val INTERNET_REQUIRED = "internet_required"
         const val RETRY_COUNT = "retry_count"
+        const val MAX_HISTORY_SIZE = "max_history_size"
         const val SIGNING_KEY = "signing_key"
     }
 
@@ -33,6 +37,7 @@ class WebhooksSettings(
         return mapOf(
             INTERNET_REQUIRED to internetRequired,
             RETRY_COUNT to retryCount,
+            MAX_HISTORY_SIZE to maxHistorySize,
         )
     }
 
@@ -57,6 +62,19 @@ class WebhooksSettings(
                     val changed = this.retryCount != retryCount
 
                     storage.set(key, retryCount?.toString())
+
+                    changed
+                }
+
+                MAX_HISTORY_SIZE -> {
+                    val maxHistorySize = value?.toString()?.toFloat()?.toInt() ?: 50
+                    if (maxHistorySize != null && maxHistorySize < 1) {
+                        throw IllegalArgumentException("Max history size must be >= 1")
+                    }
+
+                    val changed = this.maxHistorySize != maxHistorySize
+
+                    storage.set(key, maxHistorySize?.toString())
 
                     changed
                 }

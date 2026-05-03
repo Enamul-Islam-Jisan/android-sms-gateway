@@ -1,40 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/background"
     tools:context=".ui.HolderFragment">
 
-    <LinearLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:background="@color/slate_50"
+        android:orientation="horizontal">
 
-        <Button
+        <TextView
             android:id="@+id/buttonOutgoing"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp"
-            android:text="@string/outgoing_messages"
-            android:textAllCaps="true" />
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="OUTGOING"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:background="?attr/selectableItemBackground" />
 
-        <Button
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/slate_200" />
+
+        <TextView
             android:id="@+id/buttonIncoming"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
             android:layout_weight="1"
-            android:enabled="false"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp"
-            android:text="@string/incoming_messages"
-            android:textAllCaps="true" />
-    </LinearLayout>
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="INCOMING"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textColor="@color/slate_500"
+            android:textStyle="bold"
+            android:background="?attr/selectableItemBackground" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/slate_200" />
 
     <FrameLayout
         android:id="@+id/rootLayout"
@@ -42,4 +54,4 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-</LinearLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>

@@ -42,6 +42,11 @@ import me.capcom.smsgateway.modules.orchestrator.OrchestratorService
 import me.capcom.smsgateway.ui.dialogs.FirstStartDialogFragment
 import org.koin.android.ext.android.inject
 
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import me.capcom.smsgateway.modules.messages.vm.MessagesListViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
+
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
@@ -58,6 +63,7 @@ class HomeFragment : Fragment() {
     private val gatewaySvc: GatewayService by inject()
 
     private val orchestratorSvc: OrchestratorService by inject()
+    private val messagesViewModel: MessagesListViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +78,7 @@ class HomeFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     )
                         .show()
-                    binding.buttonStart.isChecked = false
+                    updateStartButton(false)
                     return@setFragmentResultListener
                 }
 
@@ -131,13 +137,6 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textLocalIP.movementMethod = LinkMovementMethod.getInstance()
-        binding.textPublicIP.movementMethod = LinkMovementMethod.getInstance()
-        binding.textLocalUsername.movementMethod = LinkMovementMethod.getInstance()
-        binding.textLocalPassword.movementMethod = LinkMovementMethod.getInstance()
-        binding.textLocalDeviceId.movementMethod = LinkMovementMethod.getInstance()
-        binding.textRemoteDeviceId.movementMethod = LinkMovementMethod.getInstance()
-
         binding.switchAutostart.isChecked = settingsHelper.autostart
 
         binding.switchAutostart.setOnCheckedChangeListener { _, isChecked ->
@@ -149,8 +148,6 @@ class HomeFragment : Fragment() {
             }
 
             gatewaySettings.enabled = isChecked
-            binding.layoutRemoteServer.isVisible = isChecked
-            binding.textConnectionStatus.isVisible = isChecked
         }
         binding.switchUseLocalServer.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked != localServerSettings.enabled) {
@@ -158,66 +155,38 @@ class HomeFragment : Fragment() {
             }
 
             localServerSettings.enabled = isChecked
-            binding.layoutLocalServer.isVisible = isChecked
         }
 
-        binding.buttonStart.setOnClickListener {
-            actionStart(binding.buttonStart.isChecked)
+        binding.buttonStart.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked != (stateLiveData.value ?: false)) {
+                actionStart(isChecked)
+            }
         }
 
-//        if (settingsHelper.autostart) {
-//            actionStart(true)
-//        }
+        binding.layoutDetailsHeader.setOnClickListener {
+            val isVisible = binding.layoutDetailsContent.visibility == View.VISIBLE
+            binding.layoutDetailsContent.visibility = if (isVisible) View.GONE else View.VISIBLE
+            binding.imageDetailsArrow.rotation = if (isVisible) 0f else 180f
+        }
+
+        messagesViewModel.totals.observe(viewLifecycleOwner) { stats ->
+            binding.totalProcessed.text = stats.total.toString()
+            binding.pendingQueue.text = stats.pending.toString()
+            binding.deliveredCount.text = stats.sent.toString()
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            events.collect<DeviceRegisteredEvent.Success> { event ->
-                binding.textRemoteAddress.text = getString(R.string.address_is, event.server)
-
-                binding.textRemoteUsername.movementMethod = LinkMovementMethod.getInstance()
-                binding.textRemotePassword.movementMethod = LinkMovementMethod.getInstance()
-
-                binding.textRemoteUsername.text = makeCopyableLink(
-                    Html
-                        .fromHtml(
-                            "<a href>${event.login}</a>"
-                        )
-                )
-
-                binding.textRemotePassword.text = when (event.password) {
-                    null -> getString(R.string.n_a)
-                    else -> makeCopyableLink(
-                        Html
-                            .fromHtml(
-                                "<a href>${event.password}</a>"
-                            )
-                    )
-                }
-
-                // Set Cloud Server Device ID
-                binding.textRemoteDeviceId.text = gatewaySettings.deviceId?.let {
-                    makeCopyableLink(
-                        Html.fromHtml(
-                            "<a href>$it</a>"
-                        )
-                    )
-                } ?: getString(R.string.n_a)
+            events.collect<DeviceRegisteredEvent.Success> { event: DeviceRegisteredEvent.Success ->
+                binding.textRemoteAddress.text = event.server
+                binding.textRemoteUsername.text = event.login
+                binding.textRemoteDeviceId.text = gatewaySettings.deviceId ?: getString(R.string.n_a)
             }
         }
         viewLifecycleOwner.lifecycleScope.launch {
-            events.collect<DeviceRegisteredEvent.Failure> { event ->
-                binding.textRemoteAddress.text = getString(R.string.address_is, event.server)
-
+            events.collect<DeviceRegisteredEvent.Failure> { event: DeviceRegisteredEvent.Failure ->
+                binding.textRemoteAddress.text = event.server
                 binding.textRemoteUsername.text = getString(R.string.not_registered)
-                binding.textRemotePassword.text = getString(R.string.n_a)
-
-                // Set Cloud Server Device ID (even for failure cases)
-                binding.textRemoteDeviceId.text = gatewaySettings.deviceId?.let {
-                    makeCopyableLink(
-                        Html.fromHtml(
-                            "<a href>$it</a>"
-                        )
-                    )
-                } ?: getString(R.string.n_a)
+                binding.textRemoteDeviceId.text = gatewaySettings.deviceId ?: getString(R.string.n_a)
 
                 Toast.makeText(
                     requireContext(),
@@ -228,62 +197,24 @@ class HomeFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            events.collect<IPReceivedEvent> { event ->
-                binding.textLocalUsername.text = makeCopyableLink(
-                    Html.fromHtml(
-                        "<a href>${localServerSettings.username}</a>"
-                    )
-                )
-                binding.textLocalPassword.text = makeCopyableLink(
-                    Html.fromHtml(
-                        "<a href>${localServerSettings.password}</a>"
-                    )
-                )
-
+            events.collect<IPReceivedEvent> { event: IPReceivedEvent ->
+                binding.textLocalUsername.text = localServerSettings.username
                 binding.textLocalIP.text = event.localIP?.let {
-                    makeCopyableLink(
-                        Html.fromHtml(
-                            getString(
-                                R.string.settings_local_address_is,
-                                event.localIP,
-                                localServerSettings.port
-                            )
-                        )
-                    )
-
+                    "${event.localIP}:${localServerSettings.port}"
                 } ?: getString(R.string.settings_local_address_not_found)
 
                 binding.textPublicIP.text = event.publicIP?.let {
-                    makeCopyableLink(
-                        Html.fromHtml(
-                            getString(
-                                R.string.settings_public_address_is,
-                                event.publicIP,
-                                localServerSettings.port
-                            )
-                        )
-                    )
+                    "${event.publicIP}:${localServerSettings.port}"
                 } ?: getString(R.string.settings_public_address_not_found)
-
-                // Set Local Server Device ID
-                binding.textLocalDeviceId.text = localServerSettings.deviceId?.let {
-                    makeCopyableLink(
-                        Html.fromHtml(
-                            "<a href>$it</a>"
-                        )
-                    )
-                } ?: getString(R.string.n_a)
             }
         }
 
         stateLiveData.observe(viewLifecycleOwner) {
-            binding.buttonStart.isChecked = it
+            updateStartButton(it)
         }
 
         connectionService.status.observe(viewLifecycleOwner) {
             binding.textConnectionStatus.apply {
-                isVisible = binding.switchUseRemoteServer.isChecked
-                isEnabled = it
                 text = when (it) {
                     true -> context.getString(R.string.internet_connection_available)
                     false -> context.getString(R.string.internet_connection_unavailable)
@@ -292,43 +223,18 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun makeCopyableLink(source: Spanned): Spanned {
-        val builder = SpannableStringBuilder(source)
-        val spans = builder.getSpans(0, builder.length, URLSpan::class.java)
-        for (span in spans) {
-            val innerText = builder.subSequence(
-                builder.getSpanStart(span),
-                builder.getSpanEnd(span)
-            ).toString()
-            val clickableSpan = object : ClickableSpan() {
-
-                override fun onClick(widget: View) {
-                    val clipboard = requireContext().getSystemService(
-                        Context.CLIPBOARD_SERVICE
-                    ) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("", innerText))
-                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
-                        Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT)
-                            .show()
-                }
-            }
-            builder.setSpan(
-                clickableSpan,
-                builder.getSpanStart(span),
-                builder.getSpanEnd(span),
-                builder.getSpanFlags(span)
-            )
-            builder.removeSpan(span)
-        }
-
-        return builder.toSpanned()
-    }
-
     override fun onResume() {
         super.onResume()
 
         binding.switchUseRemoteServer.isChecked = gatewaySettings.enabled
         binding.switchUseLocalServer.isChecked = localServerSettings.enabled
+        
+        // Update details
+        binding.textRemoteAddress.text = gatewaySettings.serverUrl
+        binding.textRemoteUsername.text = gatewaySettings.registrationInfo?.login ?: getString(R.string.not_registered)
+        binding.textRemoteDeviceId.text = gatewaySettings.deviceId ?: getString(R.string.n_a)
+        
+        binding.textLocalUsername.text = localServerSettings.username
     }
 
     private fun actionStart(start: Boolean) {
@@ -433,13 +339,32 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
+    private fun updateStartButton(isRunning: Boolean) {
+        _binding?.let {
+            it.buttonStart.isChecked = isRunning
+            it.textStatusLabel.text = if (isRunning) "Status: Online" else "Status: Offline"
+            it.statusDot.backgroundTintList = ContextCompat.getColorStateList(requireContext(), if (isRunning) R.color.secondary else R.color.slate_500)
+            
+            if (isRunning) {
+                val anim = AlphaAnimation(0.3f, 1.0f).apply {
+                    duration = 1000
+                    repeatMode = Animation.REVERSE
+                    repeatCount = Animation.INFINITE
+                }
+                it.statusDot.startAnimation(anim)
+            } else {
+                it.statusDot.clearAnimation()
+            }
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
     companion object {
-        @JvmStatic
         fun newInstance() =
             HomeFragment()
     }

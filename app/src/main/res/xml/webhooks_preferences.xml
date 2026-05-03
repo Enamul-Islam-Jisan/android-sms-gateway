@@ -15,6 +15,15 @@
             app:defaultValue="15"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            android:defaultValue="50"
+            android:entries="@array/webhook_history_limit_entries"
+            android:entryValues="@array/webhook_history_limit_values"
+            android:icon="@drawable/ic_log_lifetime"
+            android:key="webhooks.max_history_size"
+            app:summary="@string/webhook_history_limit_summary"
+            app:title="@string/webhook_history_limit_title" />
+
         <EditTextPreference
             android:icon="@drawable/ic_signing_key"
             app:enableCopying="true"
@@ -27,4 +36,9 @@
         app:fragment="me.capcom.smsgateway.ui.settings.WebhooksListFragment"
         app:summary="@string/webhook_list_summary"
         app:title="@string/webhook_list_title" />
+    <Preference
+        android:icon="@drawable/ic_processing_order"
+        app:fragment="me.capcom.smsgateway.ui.settings.WebhookQueueFragment"
+        app:summary="@string/webhook_queue_summary"
+        app:title="@string/webhook_queue_title" />
 </androidx.preference.PreferenceScreen>

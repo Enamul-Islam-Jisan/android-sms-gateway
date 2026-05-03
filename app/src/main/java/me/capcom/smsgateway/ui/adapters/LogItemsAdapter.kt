@@ -35,18 +35,9 @@ class LogItemsAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: LogEntry) {
             binding.textViewDate.text =
-                DateFormat.getDateTimeInstance().format(Date(item.createdAt))
+                DateFormat.getTimeInstance(DateFormat.MEDIUM).format(Date(item.createdAt))
             binding.textViewMessage.text = item.message
             binding.textViewModule.text = item.module
-
-            binding.imageViewPriority.setImageResource(
-                when (item.priority) {
-                    LogEntry.Priority.DEBUG -> R.drawable.ic_log_debug
-                    LogEntry.Priority.INFO -> R.drawable.ic_log_info
-                    LogEntry.Priority.WARN -> R.drawable.ic_log_warn
-                    LogEntry.Priority.ERROR -> R.drawable.ic_log_error
-                }
-            )
         }
     }
 

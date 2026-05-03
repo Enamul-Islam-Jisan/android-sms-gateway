@@ -6,6 +6,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,10 +14,12 @@ import me.capcom.smsgateway.R
 import me.capcom.smsgateway.databinding.ItemWebhookBinding
 import me.capcom.smsgateway.modules.webhooks.domain.WebHookDTO
 
-class WebhookAdapter : ListAdapter<WebHookDTO, WebhookAdapter.ViewHolder>(WebhookDiffCallback()) {
+class WebhookAdapter(
+    private val onDelete: (WebHookDTO) -> Unit
+) : ListAdapter<WebHookDTO, WebhookAdapter.ViewHolder>(WebhookDiffCallback()) {
     class ViewHolder(private val binding: ItemWebhookBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(webhook: WebHookDTO) {
+        fun bind(webhook: WebHookDTO, onDelete: (WebHookDTO) -> Unit) {
             binding.apply {
                 idText.text = binding.root.context.getString(R.string.webhook_id_format, webhook.id)
                 urlText.text = webhook.url
@@ -31,13 +34,13 @@ class WebhookAdapter : ListAdapter<WebHookDTO, WebhookAdapter.ViewHolder>(Webhoo
                         R.string.cloud
                     )
                 }
-                sourceIcon.setImageResource(
-                    when (webhook.source) {
-                        me.capcom.smsgateway.domain.EntitySource.Local -> R.drawable.ic_local_server
-                        me.capcom.smsgateway.domain.EntitySource.Cloud,
-                        me.capcom.smsgateway.domain.EntitySource.Gateway -> R.drawable.ic_cloud_server
-                    }
-                )
+
+                otpFilterText.isVisible = webhook.ignoreOtp
+                whitelistText.isVisible = !webhook.filterSenders.isNullOrBlank()
+                whitelistText.text = "Whitelist: ${webhook.filterSenders}"
+
+                btnDelete.isVisible = webhook.source == me.capcom.smsgateway.domain.EntitySource.Local
+                btnDelete.setOnClickListener { onDelete(webhook) }
             }
         }
     }
@@ -67,7 +70,7 @@ class WebhookAdapter : ListAdapter<WebHookDTO, WebhookAdapter.ViewHolder>(Webhoo
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), onDelete)
     }
 
     class WebhookDiffCallback : DiffUtil.ItemCallback<WebHookDTO>() {

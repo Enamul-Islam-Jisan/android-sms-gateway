@@ -62,13 +62,6 @@ class ReceiverService : KoinComponent {
     }
 
     fun process(context: Context, message: InboxMessage, triggerWebhooks: Boolean) {
-        logsService.insert(
-            LogEntry.Priority.DEBUG,
-            MODULE_NAME,
-            "ReceiverService::process - message received",
-            mapOf("message" to message)
-        )
-
         val simSlotIndex = message.subscriptionId?.let {
             SubscriptionsHelper.getSimSlotIndex(context, it)
         }
@@ -78,6 +71,18 @@ class ReceiverService : KoinComponent {
         }
 
         val sender = message.address
+
+        logsService.insert(
+            LogEntry.Priority.DEBUG,
+            MODULE_NAME,
+            "ReceiverService::process - processing message",
+            mapOf(
+                "sender" to sender,
+                "recipient" to recipient,
+                "simNumber" to simNumber,
+                "triggerWebhooks" to triggerWebhooks
+            )
+        )
 
         try {
             incomingMessagesService.save(message, sender, recipient, simNumber)
@@ -144,6 +149,13 @@ class ReceiverService : KoinComponent {
                     receivedAt = message.date,
                 )
             }
+
+            logsService.insert(
+                LogEntry.Priority.DEBUG,
+                MODULE_NAME,
+                "Emitting webhook for message",
+                mapOf("type" to type.name, "sender" to sender)
+            )
 
             webHooksService.emit(context, type, payload)
         }

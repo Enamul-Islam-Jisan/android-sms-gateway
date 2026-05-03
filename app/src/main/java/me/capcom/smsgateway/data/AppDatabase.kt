@@ -33,7 +33,7 @@ import me.capcom.smsgateway.modules.webhooks.db.WebhookQueueEntity
         Token::class,
         IncomingMessage::class,
     ],
-    version = 21,
+    version = 23,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -55,6 +55,8 @@ import me.capcom.smsgateway.modules.webhooks.db.WebhookQueueEntity
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21),
+        AutoMigration(from = 21, to = 22),
+        AutoMigration(from = 22, to = 23),
     ]
 )
 @TypeConverters(Converters::class)

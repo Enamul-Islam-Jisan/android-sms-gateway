@@ -56,6 +56,8 @@ class WebHooksService(
                 url = it.url,
                 event = it.event,
                 source = it.source,
+                filterSenders = it.filterSenders,
+                ignoreOtp = it.ignoreOtp,
             )
         }
     }
@@ -72,6 +74,8 @@ class WebHooksService(
                 url = it.url,
                 event = it.event,
                 source = source,
+                filterSenders = it.filterSenders,
+                ignoreOtp = it.ignoreOtp,
             )
         })
     }
@@ -100,6 +104,8 @@ class WebHooksService(
             url = webHook.url,
             event = webHook.event,
             source = source,
+            filterSenders = webHook.filterSenders,
+            ignoreOtp = webHook.ignoreOtp,
         )
 
         val exists = webHooksDao.exists(source, webHookEntity.id)
@@ -116,6 +122,8 @@ class WebHooksService(
             url = webHookEntity.url,
             event = webHookEntity.event,
             source = webHookEntity.source,
+            filterSenders = webHookEntity.filterSenders,
+            ignoreOtp = webHookEntity.ignoreOtp,
         )
     }
 
@@ -128,29 +136,111 @@ class WebHooksService(
         var queuedCount = 0
         var skippedCount = 0
 
+        logsService.insert(
+            LogEntry.Priority.DEBUG,
+            NAME,
+            "Emitting event ${event.name}",
+            mapOf(
+                "totalWebhooks" to webhooksToProcess.size,
+                "payloadType" to payload.javaClass.simpleName
+            )
+        )
+
         webhooksToProcess.forEach { webhook ->
             // skip emitting if source is disabled
-            when {
-                webhook.source == EntitySource.Local && !localServerSettings.enabled -> {
-                    skippedCount++
-                    return@forEach
-                }
+            val isSourceEnabled = when {
+                webhook.source == EntitySource.Local -> localServerSettings.enabled
+                webhook.source == EntitySource.Cloud || webhook.source == EntitySource.Gateway -> gatewaySettings.enabled
+                else -> true
+            }
 
-                (webhook.source == EntitySource.Cloud || webhook.source == EntitySource.Gateway) && !gatewaySettings.enabled -> {
-                    skippedCount++
-                    return@forEach
-                }
+            if (!isSourceEnabled) {
+                skippedCount++
+                logsService.insert(
+                    LogEntry.Priority.DEBUG,
+                    NAME,
+                    "Skipping webhook ${webhook.id}: source ${webhook.source} is disabled",
+                )
+                return@forEach
             }
 
             val deviceId = when (webhook.source) {
                 EntitySource.Local -> localServerSettings.deviceId
                 EntitySource.Cloud, EntitySource.Gateway -> gatewaySettings.deviceId
-            } ?: run {
+            }
+
+            if (deviceId == null) {
                 skippedCount++
+                logsService.insert(
+                    LogEntry.Priority.WARN,
+                    NAME,
+                    "Skipping webhook ${webhook.id}: deviceId is null for source ${webhook.source}",
+                )
                 return@forEach
             }
 
             try {
+                // Extract sender and message for display in the queue
+                var sender: String? = null
+                var message: String? = null
+
+                when (payload) {
+                    is me.capcom.smsgateway.modules.webhooks.payload.SmsEventPayload.SmsReceived -> {
+                        sender = payload.sender
+                        message = payload.message
+                    }
+                    is me.capcom.smsgateway.modules.webhooks.payload.SmsEventPayload.SmsDataReceived -> {
+                        sender = payload.sender
+                        message = "[Data SMS]"
+                    }
+                    is me.capcom.smsgateway.modules.webhooks.payload.MmsReceivedPayload -> {
+                        sender = payload.sender
+                        message = payload.subject ?: "[MMS]"
+                    }
+                    is me.capcom.smsgateway.modules.webhooks.payload.MmsDownloadedPayload -> {
+                        sender = payload.sender
+                        message = payload.subject ?: "[MMS]"
+                    }
+                    is me.capcom.smsgateway.modules.webhooks.payload.MessageEventPayload -> {
+                        // For outgoing message events, payload might have sender/text depending on state
+                        // But these are status updates, so maybe not applicable or use messageId
+                    }
+                }
+
+                // Apply filters
+                if (event == WebHookEvent.SmsReceived || event == WebHookEvent.SmsDataReceived || event == WebHookEvent.MmsReceived || event == WebHookEvent.MmsDownloaded) {
+                    // Sender whitelist
+                    if (!webhook.filterSenders.isNullOrBlank()) {
+                        val whitelistedSenders = webhook.filterSenders.split(",").map { it.trim() }
+                        if (sender == null || whitelistedSenders.none { sender.contains(it, ignoreCase = true) }) {
+                            skippedCount++
+                            logsService.insert(
+                                LogEntry.Priority.DEBUG,
+                                NAME,
+                                "Skipping webhook ${webhook.id}: sender $sender is not whitelisted",
+                            )
+                            return@forEach
+                        }
+                    }
+
+                    // OTP Prevention
+                    if (webhook.ignoreOtp && message != null) {
+                        val otpKeywords = listOf("otp", "verification code", "one-time password", "tan", "auth code")
+                        val isOtp = otpKeywords.any { message.contains(it, ignoreCase = true) } ||
+                                message.contains(Regex("\\b\\d{4,8}\\b")) // Simple regex for 4-8 digit codes
+
+                        if (isOtp) {
+                            skippedCount++
+                            logsService.insert(
+                                LogEntry.Priority.DEBUG,
+                                NAME,
+                                "Skipping webhook ${webhook.id}: message is identified as OTP",
+                            )
+                            return@forEach
+                        }
+                    }
+                }
+
                 // Create the webhook event DTO
                 val webhookEventDTO = WebHookEventDTO(
                     id = NanoIdUtils.randomNanoId(),
@@ -164,7 +254,9 @@ class WebHooksService(
                     context = context,
                     url = webhook.url,
                     data = webhookEventDTO,
-                    internetRequired = webhooksSettings.internetRequired
+                    internetRequired = webhooksSettings.internetRequired,
+                    sender = sender,
+                    message = message
                 )
 
                 queuedCount++
@@ -175,8 +267,8 @@ class WebHooksService(
                     "Queued webhook event for processing",
                     mapOf(
                         "webhookId" to webhook.id,
-                        "event" to event.name,
-                        "internetRequired" to webhooksSettings.internetRequired
+                        "url" to webhook.url,
+                        "event" to event.name
                     )
                 )
             } catch (e: Exception) {
@@ -195,19 +287,17 @@ class WebHooksService(
         }
 
         // Log summary for debugging
-        if (webhooksToProcess.isNotEmpty()) {
-            logsService.insert(
-                LogEntry.Priority.DEBUG,
-                NAME,
-                "Webhook emission summary",
-                mapOf(
-                    "event" to event.name,
-                    "totalWebhooks" to webhooksToProcess.size,
-                    "queued" to queuedCount,
-                    "skipped" to skippedCount
-                )
+        logsService.insert(
+            LogEntry.Priority.DEBUG,
+            NAME,
+            "Webhook emission summary",
+            mapOf(
+                "event" to event.name,
+                "totalWebhooks" to webhooksToProcess.size,
+                "queued" to queuedCount,
+                "skipped" to skippedCount
             )
-        }
+        )
     }
 
     private fun notifyUser() {

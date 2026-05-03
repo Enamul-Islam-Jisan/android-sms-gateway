@@ -5,6 +5,8 @@ import me.capcom.smsgateway.modules.webhooks.WebhookPayloadStorage
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Repository for webhook queue operations.
  * Provides business logic and a clean API for the rest of the application.
@@ -20,6 +22,8 @@ class WebhookQueueRepository(
     suspend fun enqueueWebhook(
         url: String,
         payload: String,
+        sender: String? = null,
+        message: String? = null,
     ): String {
         val id = NanoIdUtils.randomNanoId()
         val payloadRef = payloadStorage.save(id, payload)
@@ -32,7 +36,9 @@ class WebhookQueueRepository(
                     payload = payloadRef,
                     status = WebhookStatus.PENDING,
                     createdAt = System.currentTimeMillis(),
-                    nextAttempt = System.currentTimeMillis()
+                    nextAttempt = System.currentTimeMillis(),
+                    sender = sender,
+                    message = message
                 )
              )
         } catch (e: Exception) {
@@ -55,6 +61,67 @@ class WebhookQueueRepository(
      */
     suspend fun getPendingWebhooks(limit: Int = 10): List<WebhookQueueEntity> {
         return dao.getPendingWebhooks(limit = limit)
+    }
+
+    /**
+     * Get all webhook events in the queue.
+     */
+    fun selectQueue(): Flow<List<WebhookQueueEntity>> {
+        return dao.selectQueue()
+    }
+
+    /**
+     * Get pending webhook events.
+     */
+    fun selectPendingQueue(): Flow<List<WebhookQueueEntity>> {
+        return dao.selectPendingQueue()
+    }
+
+    /**
+     * Get failed webhook events.
+     */
+    fun selectFailedQueue(): Flow<List<WebhookQueueEntity>> {
+        return dao.selectFailedQueue()
+    }
+
+    /**
+     * Get completed webhook events with a limit.
+     */
+    fun selectHistoryQueue(limit: Int): Flow<List<WebhookQueueEntity>> {
+        return dao.selectHistoryQueue(limit)
+    }
+
+    /**
+     * Get queue statistics.
+     */
+    fun getQueueStatistics(): Flow<WebhookQueueStatistics> {
+        return dao.getQueueStatistics()
+    }
+
+    /**
+     * Delete a webhook from the queue.
+     */
+    suspend fun delete(webhookId: String) {
+        payloadStorage.delete(webhookId)
+        dao.delete(id = webhookId)
+    }
+
+    /**
+     * Cancel a webhook in the queue.
+     */
+    suspend fun cancel(webhookId: String) {
+        dao.updateStatus(webhookId, WebhookStatus.CANCELLED)
+    }
+
+    /**
+     * Manually retry a webhook.
+     */
+    suspend fun retry(webhookId: String) {
+        dao.markAsFailed(
+            id = webhookId,
+            nextAttempt = System.currentTimeMillis(),
+            error = null
+        )
     }
 
     /**
@@ -120,6 +187,15 @@ class WebhookQueueRepository(
         val oldEntryIds = dao.getOldEntryIds(cutoffTime)
         oldEntryIds.forEach { payloadStorage.delete(it) }
         dao.cleanupOldEntries(oldEntryIds)
+    }
+
+    /**
+     * Clear all completed and cancelled webhooks from the queue.
+     */
+    suspend fun clearHistory() {
+        val ids = dao.getHistoryIds()
+        ids.forEach { payloadStorage.delete(it) }
+        dao.cleanupOldEntries(ids)
     }
 
     /**

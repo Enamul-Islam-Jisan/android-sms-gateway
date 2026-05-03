@@ -2,6 +2,8 @@ package me.capcom.smsgateway.modules.webhooks.db
 
 import androidx.room.*
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Data Access Object for webhook queue operations.
  */
@@ -41,6 +43,42 @@ interface WebhookQueueDao {
         currentTime: Long = System.currentTimeMillis(),
         limit: Int = 10
     ): List<WebhookQueueEntity>
+
+    /**
+     * Get all webhook events ordered by creation time.
+     */
+    @Query("SELECT * FROM webhook_queue ORDER BY created_at DESC")
+    fun selectQueue(): Flow<List<WebhookQueueEntity>>
+
+    /**
+     * Get pending webhook events.
+     */
+    @Query("SELECT * FROM webhook_queue WHERE status IN ('pending', 'processing') ORDER BY created_at DESC")
+    fun selectPendingQueue(): Flow<List<WebhookQueueEntity>>
+
+    /**
+     * Get failed webhook events.
+     */
+    @Query("SELECT * FROM webhook_queue WHERE status IN ('failed', 'permanently_failed') ORDER BY created_at DESC")
+    fun selectFailedQueue(): Flow<List<WebhookQueueEntity>>
+
+    /**
+     * Get completed webhook events with a limit.
+     */
+    @Query("SELECT * FROM webhook_queue WHERE status IN ('completed', 'cancelled') ORDER BY created_at DESC LIMIT :limit")
+    fun selectHistoryQueue(limit: Int): Flow<List<WebhookQueueEntity>>
+
+    /**
+     * Delete a webhook by ID.
+     */
+    @Query("DELETE FROM webhook_queue WHERE id = :id")
+    suspend fun delete(id: String)
+
+    /**
+     * Update webhook status.
+     */
+    @Query("UPDATE webhook_queue SET status = :status WHERE id = :id")
+    suspend fun updateStatus(id: String, status: WebhookStatus)
 
     /**
      * Mark webhook as processing.
@@ -115,17 +153,24 @@ interface WebhookQueueDao {
             SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing,
             SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
             SUM(CASE WHEN status = 'permanently_failed' THEN 1 ELSE 0 END) as permanentlyFailed,
-            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
         FROM webhook_queue
     """
     )
-    suspend fun getQueueStatistics(): WebhookQueueStatistics
+    fun getQueueStatistics(): Flow<WebhookQueueStatistics>
 
     /**
      * Get IDs of old completed/permanently failed webhook entries
      */
-    @Query("SELECT id FROM webhook_queue WHERE status IN ('completed', 'permanently_failed') AND created_at < :cutoffTime")
+    @Query("SELECT id FROM webhook_queue WHERE status IN ('completed', 'permanently_failed', 'cancelled') AND created_at < :cutoffTime")
     suspend fun getOldEntryIds(cutoffTime: Long): List<String>
+
+    /**
+     * Get IDs of completed/cancelled webhook entries
+     */
+    @Query("SELECT id FROM webhook_queue WHERE status IN ('completed', 'cancelled')")
+    suspend fun getHistoryIds(): List<String>
 
     /**
      * Clean up old completed webhook events.
@@ -162,5 +207,6 @@ data class WebhookQueueStatistics(
     val processing: Int,
     val failed: Int,
     val permanentlyFailed: Int,
-    val completed: Int
+    val completed: Int,
+    val cancelled: Int
 )
